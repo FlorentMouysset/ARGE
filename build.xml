@@ -1,0 +1,200 @@
+
+
+<project>
+
+	<!-- general property -->
+	<property name="src.dir" value="src" />
+	<property name="build.dir" value="build" />
+	<property name="lib.dir" value="lib" />
+	
+	<!-- demo property -->
+	<property name="srcdemo.dir" value="${src.dir}/demo" />
+	<property name="classesdemo.dir" value="${build.dir}/classes-demo" />
+	<property name="jardemo.dir" value="${build.dir}/jar-demo" />
+	<property name="confServletDemo.file" value="${srcdemo.dir}/XmlRpcServlet.properties" />
+	<property name="webDemo.file" value="${srcdemo.dir}/web.xml" />
+	<property name="serverdemo-class" value="Server"/>
+	<property name="clientdemo-class" value="Client"/>
+	
+	<!-- tp1 property -->
+	<property name="srctp1.dir" value="${src.dir}/tp1" />
+	<property name="classestp1.dir" value="${build.dir}/classes-tp1" />
+	<property name="jartp1.dir" value="${build.dir}/jar-tp1" />
+	<property name="confServletTP1Balancer.file" value="${srctp1.dir}/balancer/XmlRpcServletBalancer.properties" />
+	<property name="confServletTP1Woker.file" value="${srctp1.dir}/worker/XmlRpcServletWorker.properties" />
+	<property name="confServletTP1Client.file" value="${srctp1.dir}/client/XmlRpcServletClient.properties" />
+<!--	<property name="webTP1.file" value="${srctp1.dir}/web.xml" /> -->
+	<property name="workertp1-class"  value="Worker"/>
+	<property name="workertp1-mainclass"  value="WorkerMain"/>
+	<property name="clienttp1-class"  value="Client"/>
+	<property name="clienttp1-mainclass"  value="ClientMain"/>
+	<property name="balancertp1-class"  value="Balancer"/>
+	<property name="balancertp1-mainclass"  value="BalancerMain"/>
+	<property name="client.nbReq.arg"  value="1"/>
+	<property name="client.ip.arg"  value="127.0.0.1"/>
+	<property name="client.port.arg"  value="8079"/>
+	<property name="balancer.ip.arg"  value="127.0.0.1"/>
+	<property name="balancer.port.arg"  value="8080"/>
+	<property name="worker1.ip.arg" value="127.0.0.1"/>
+	<property name="worker1.port.arg" value="8081"/>	
+	<property name="worker2.ip.arg" value="127.0.0.1"/>
+	<property name="worker2.port.arg" value="8082"/>	
+	
+
+	<!-- general classpath  -->
+<target name="init-classpath">
+    <path id="lib.classpath">
+        <fileset dir="./lib/">
+            <include name="**.jar" />
+        </fileset>
+    </path>
+    <pathconvert property="mf.classpath" pathsep=" ">
+        <path refid="lib.classpath" />
+        <flattenmapper />
+    </pathconvert>
+</target>
+	
+	
+	
+	<!-- **************** TP1 tagets **************** -->
+	<target name="clean">
+		<delete dir="${classestp1.dir}" />
+		<delete dir="${jartp1.dir}" />
+	</target>
+
+	<target name="compile" depends="clean, init-classpath">
+		<mkdir dir="${classestp1.dir}" />
+		<javac srcdir="${srctp1.dir}" destdir="${classestp1.dir}"
+			classpathref="lib.classpath" />
+		<!-- copy configuration file -->
+		<copy file="${confServletTP1Balancer.file}" todir="${classestp1.dir}" />
+		<copy file="${confServletTP1Woker.file}" todir="${classestp1.dir}" />
+		<copy file="${confServletTP1Client.file}" todir="${classestp1.dir}" />
+	</target>
+
+	<target name="jar" depends="compile, init-classpath">
+		<mkdir dir="${jartp1.dir}" />
+		<!-- jar worker -->
+		<jar destfile="${jartp1.dir}/${workertp1-class}.jar" basedir="${classestp1.dir}" excludes="**/Client.class">
+			<manifest>
+				<attribute name="Main-Class" value="tp1/worker/${workertp1-mainclass}" />
+	            <attribute name="Class-Path" value="${mf.classpath}" />
+			</manifest>
+		</jar>
+		<!-- jar client -->
+		<jar destfile="${jartp1.dir}/${clienttp1-class}.jar" basedir="${classestp1.dir}"
+			excludes="**/Calculator.class **/Server.class **/XmlRpcServlet.properties">
+			<manifest>
+				<attribute name="Main-Class" value="tp1/client/${clienttp1-mainclass}"/>
+	            <attribute name="Class-Path" value="${mf.classpath}" />
+			</manifest>
+		</jar>
+		<!-- jar balancer -->
+		<jar destfile="${jartp1.dir}/${balancertp1-class}.jar" basedir="${classestp1.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="tp1/balancer/${balancertp1-mainclass}"/>
+	            <attribute name="Class-Path" value="${mf.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="pre-run">
+		 <copy todir="${jartp1.dir}">
+		    <fileset dir="${lib.dir}"/>
+		  </copy>
+	<!--	<copy file="${webTP1.file}" todir="${jartp1.dir}" /> -->
+	</target>
+	
+	 <target name="runWorker1">
+		<java jar="${jartp1.dir}/${workertp1-class}.jar" fork="true">
+			<arg value="${worker1.ip.arg}"/>
+			<arg value="${worker1.port.arg}"/>			
+			<arg value="${balancer.ip.arg}"/>
+			<arg value="${balancer.port.arg}"/>
+		</java>
+	</target>
+
+	 <target name="runWorker2">
+		<java jar="${jartp1.dir}/${workertp1-class}.jar" fork="true">
+			<arg value="${worker2.ip.arg}"/>
+			<arg value="${worker2.port.arg}"/>			
+			<arg value="${balancer.ip.arg}"/>
+			<arg value="${balancer.port.arg}"/>
+		</java>
+	</target>
+	
+	 <target name="runClient">
+		<java jar="${jartp1.dir}/${clienttp1-class}.jar" fork="true">
+			<arg value="${client.nbReq.arg}"/>
+			<arg value="${client.ip.arg}"/>
+			<arg value="${client.port.arg}"/>
+		</java>
+	</target>
+	
+	 <target name="runBalancer">
+		<java jar="${jartp1.dir}/${balancertp1-class}.jar" fork="true">
+			<arg value="${balancer.ip.arg}"/>
+			<arg value="${balancer.port.arg}"/>
+		</java>
+	</target>
+	
+	<target name="build" depends="jar, pre-run"/>
+
+	
+	
+	
+	<!-- **************** Demo tagets **************** -->
+	<target name="clean-demo">
+		<delete dir="${classesdemo.dir}" />
+		<delete dir="${jardemo.dir}" />
+	</target>
+
+	<target name="compile-demo" depends="clean-demo, init-classpath">
+		<mkdir dir="${classesdemo.dir}" />
+		<javac srcdir="${srcdemo.dir}" destdir="${classesdemo.dir}"
+			classpathref="lib.classpath" />
+		<!-- copy configuration file -->
+		<copy file="${confServletDemo.file}" todir="${classesdemo.dir}" />
+	</target>
+
+	<target name="jar-demo" depends="compile-demo, init-classpath">
+		<mkdir dir="${jardemo.dir}" />
+		<!-- jar server -->
+		<jar destfile="${jardemo.dir}/Server.jar" basedir="${classesdemo.dir}" excludes="**/Client.class">
+			<manifest>
+				<attribute name="Main-Class" value="demo/${serverdemo-class}" />
+	            <attribute name="Class-Path" value="${mf.classpath}" />
+			</manifest>
+		</jar>
+		<!-- jar client -->
+		<jar destfile="${jardemo.dir}/Client.jar" basedir="${classesdemo.dir}"
+			excludes="**/Calculator.class **/Server.class **/XmlRpcServlet.properties">
+			<manifest>
+				<attribute name="Main-Class" value="demo/${clientdemo-class}"/>
+	            <attribute name="Class-Path" value="${mf.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="pre-run-demo">
+		 <copy todir="${jardemo.dir}">
+		    <fileset dir="${lib.dir}"/>
+		  </copy>
+		<copy file="${webDemo.file}" todir="${jardemo.dir}" />
+	</target>
+	
+	 <target name="runServer-demo">
+	 	<sleep seconds="1"/>
+		<java jar="${jardemo.dir}/${serverdemo-class}.jar" fork="true"/>			
+	</target>
+
+	 <target name="runClient-demo">
+	 	<sleep seconds="1"/>
+		<java jar="${jardemo.dir}/${clientdemo-class}.jar" fork="true" />			
+	</target>
+	
+	<target name="build-demo" depends="jar-demo, pre-run-demo"/>
+	
+	
+	
+</project>
