@@ -30,7 +30,7 @@
 	<property name="clienttp1-mainclass"  value="ClientMain"/>
 	<property name="balancertp1-class"  value="Balancer"/>
 	<property name="balancertp1-mainclass"  value="BalancerMain"/>
-	<property name="client.nbReq.arg"  value="1"/>
+	<property name="client.nbReq.arg"  value="10"/>
 	<property name="client.ip.arg"  value="127.0.0.1"/>
 	<property name="client.port.arg"  value="8079"/>
 	<property name="balancer.ip.arg"  value="127.0.0.1"/>
@@ -66,35 +66,39 @@
 		<mkdir dir="${classestp1.dir}" />
 		<javac srcdir="${srctp1.dir}" destdir="${classestp1.dir}"
 			classpathref="lib.classpath" />
-		<!-- copy configuration file -->
+		<!-- copy configuration file 
 		<copy file="${confServletTP1Balancer.file}" todir="${classestp1.dir}" />
-		<copy file="${confServletTP1Woker.file}" todir="${classestp1.dir}" />
-		<copy file="${confServletTP1Client.file}" todir="${classestp1.dir}" />
+		
+		<copy file="${confServletTP1Client.file}" todir="${classestp1.dir}" />-->
 	</target>
 
 	<target name="jar" depends="compile, init-classpath">
 		<mkdir dir="${jartp1.dir}" />
 		<!-- jar worker -->
-		<jar destfile="${jartp1.dir}/${workertp1-class}.jar" basedir="${classestp1.dir}" excludes="**/Client.class">
+		<jar destfile="${jartp1.dir}/${workertp1-class}.jar" basedir="${classestp1.dir}" excludes="**/client/** **/balancer/** ${confServletTP1Client.file} ${confServletTP1Balancer.file}">
 			<manifest>
 				<attribute name="Main-Class" value="tp1/worker/${workertp1-mainclass}" />
 	            <attribute name="Class-Path" value="${mf.classpath}" />
 			</manifest>
+			<fileset file="${confServletTP1Woker.file}" />
 		</jar>
 		<!-- jar client -->
 		<jar destfile="${jartp1.dir}/${clienttp1-class}.jar" basedir="${classestp1.dir}"
-			excludes="**/Calculator.class **/Server.class **/XmlRpcServlet.properties">
+			excludes="**/worker/** **/balancer/** ${confServletTP1Woker.file} ${confServletTP1Balancer.file}">
 			<manifest>
 				<attribute name="Main-Class" value="tp1/client/${clienttp1-mainclass}"/>
 	            <attribute name="Class-Path" value="${mf.classpath}" />
 			</manifest>
+			<fileset file="${confServletTP1Client.file}" />
 		</jar>
 		<!-- jar balancer -->
-		<jar destfile="${jartp1.dir}/${balancertp1-class}.jar" basedir="${classestp1.dir}">
+		<jar destfile="${jartp1.dir}/${balancertp1-class}.jar" basedir="${classestp1.dir}"
+			excludes="**/worker/** **/client/** ${confServletTP1Client.file} ${confServletTP1Balancer.file}">
 			<manifest>
 				<attribute name="Main-Class" value="tp1/balancer/${balancertp1-mainclass}"/>
 	            <attribute name="Class-Path" value="${mf.classpath}" />
 			</manifest>
+			<fileset file="${confServletTP1Balancer.file}" />
 		</jar>
 	</target>
 
@@ -128,6 +132,8 @@
 			<arg value="${client.nbReq.arg}"/>
 			<arg value="${client.ip.arg}"/>
 			<arg value="${client.port.arg}"/>
+			<arg value="${balancer.ip.arg}"/>
+			<arg value="${balancer.port.arg}"/>
 		</java>
 	</target>
 	
