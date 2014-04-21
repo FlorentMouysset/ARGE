@@ -54,8 +54,6 @@
     </pathconvert>
 </target>
 	
-	
-	
 	<!-- **************** TP1 tagets **************** -->
 	<target name="clean">
 		<delete dir="${classestp1.dir}" />
@@ -66,10 +64,6 @@
 		<mkdir dir="${classestp1.dir}" />
 		<javac srcdir="${srctp1.dir}" destdir="${classestp1.dir}"
 			classpathref="lib.classpath" />
-		<!-- copy configuration file 
-		<copy file="${confServletTP1Balancer.file}" todir="${classestp1.dir}" />
-		
-		<copy file="${confServletTP1Client.file}" todir="${classestp1.dir}" />-->
 	</target>
 
 	<target name="jar" depends="compile, init-classpath">

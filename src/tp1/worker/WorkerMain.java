@@ -31,11 +31,10 @@ public class WorkerMain {
 		workerServices.initWorkerService(balancerCouple);
 		workerServices.regitryToBalancer(localCouple);
 
-		System.out.println("Type m <ipBalancer> form migrate\nType exit for stop worker.");
-		
+		System.out.println("Type to stop worker.");
 		Scanner sc = new Scanner(System.in);
 		String str = sc.next();
-		System.out.println("ici");
+		sc.close();
 		
 		//TODO if migrate stop server 
 		//prepareMigrateWorkerService

@@ -34,6 +34,7 @@ public class ClientMain {
 		
 		Scanner sc = new Scanner(System.in);
 		String str = sc.next();		
+		sc.close();
 
 		ClientServer.stop();
 		Client.stopAndJoinClientThread();
