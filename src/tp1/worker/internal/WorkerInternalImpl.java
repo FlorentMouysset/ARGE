@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 import tp1.datacontract.Task;
 import tp1.datacontract.Task.STATUS_TASK;
+import tp1.utils.ARGELogger;
+import tp1.utils.ARGELogger.LOG_LEVEL;
 
 
 public class WorkerInternalImpl implements IWorkerInternal {
@@ -13,6 +15,7 @@ public class WorkerInternalImpl implements IWorkerInternal {
 	private Thread workerInternalThread;
 	private static WorkerInternalImpl instance = null;
 	private BlockingQueue<Task> todoTask = new ArrayBlockingQueue<Task>(10);
+	private boolean stopThread = false;
 
 	private WorkerInternalImpl(){
 		instance = this;
@@ -34,15 +37,46 @@ public class WorkerInternalImpl implements IWorkerInternal {
 	}
 
 
+	@Override
+	public void stopAndJoinThread() {
+		if(!workerInternalThread.isAlive()) return;
+		stopThread = true;
+		sendFakeTaskToStopThread(300);
+		try {
+			workerInternalThread.join();
+		} catch (InterruptedException e) {
+			ARGELogger.log("Worker", " join reply thread " + e.getMessage(), LOG_LEVEL.CRIT);
+			e.printStackTrace();
+		}
+	}
+	
+
+private void sendFakeTaskToStopThread(int secondesToWaitBeforeInterrupt){
+	boolean result = false;
+	try {
+		//offer a fake task to stop the thread
+		result = todoTask.offer(new Task(-1, "", null), secondesToWaitBeforeInterrupt, TimeUnit.SECONDS);
+	} catch (InterruptedException e) {
+		ARGELogger.log("Worker", " sendFakeTaskToStopThread " + e.getMessage(), LOG_LEVEL.CRIT);
+		e.printStackTrace();
+	}
+	if(!result){
+		workerInternalThread.interrupt();
+	}
+}
+
 	private class WorkerThread implements Runnable {
 
 
 		public void run() {
-			while(true){
+			while(!stopThread){
 				if( !todoTask.isEmpty()){
 					try {
 						Task task = todoTask.poll(1, TimeUnit.MINUTES);
 						if(task != null){
+							if(task.getTaskID().equals("-1") || stopThread){
+								break;
+							}
 							executeTask(task);
 						}
 					} catch (InterruptedException e) {
@@ -88,6 +122,8 @@ public class WorkerInternalImpl implements IWorkerInternal {
 		}
 
 	}
+
+
 
 }
 

@@ -12,14 +12,14 @@ public class BalancerFrontImpl implements IBalancerFrontClient, IBalancerFrontWo
 	private static IBalancerDispatcherInternal dispatcherInstance = null;
 	private static IBalancerTaskReceivedInternal finishedTaskReceivedInstance = null;
 	
-	private static IBalancerDispatcherInternal getDispatcherInstance(){
+	private synchronized static IBalancerDispatcherInternal getDispatcherInstance(){
 		if(dispatcherInstance == null){
 			dispatcherInstance = BalancerDispatcherInternalImpl.getBalancerWorkerInternal();
 		}
 		return dispatcherInstance;
 	}
 	
-	private static IBalancerTaskReceivedInternal getTaskReceivedInstance(){
+	private synchronized static IBalancerTaskReceivedInternal getTaskReceivedInstance(){
 		if(finishedTaskReceivedInstance == null){
 			finishedTaskReceivedInstance = BalancerTaskReplyInternalImpl.getTaskReplyInternal();
 		}

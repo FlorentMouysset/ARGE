@@ -16,7 +16,7 @@ public interface IClientFrontBalancer {
 	
 	/**
 	 * Submit response task to client
-	 * @return boolean : true if the new task is correctly registered, false else 
+	 * @return boolean : true if the response task is correctly registered, false else 
 	 * */
 	boolean submitTaskResponse(Task task);
 	

@@ -3,7 +3,9 @@ package tp1.worker;
 import java.util.Scanner;
 
 import tp1.datacontract.CoupleIpPort;
+import tp1.worker.internal.IWorkerInternal;
 import tp1.worker.internal.IWorkerServices;
+import tp1.worker.internal.WorkerInternalImpl;
 import tp1.worker.internal.WorkerServer;
 import tp1.worker.internal.WorkerServices;
 
@@ -44,6 +46,8 @@ public class WorkerMain {
 		
 
 		workerServices.unRegistryToBalancer(localCouple);
+		IWorkerInternal workerInternal = WorkerInternalImpl.getWorkerInternal();
+		if(workerInternal != null) workerInternal.stopAndJoinThread();
 		WorkerServer.stop();
 	}
 
